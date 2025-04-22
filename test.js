@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe';
 
 fixture`Test de connexion`
-    .page`http://localhost:99/`;  // L'URL de la page de connexion
+    .page`https://gim.faustbtl.site/`;  // L'URL de la page de connexion
 
 test('Connexion avec des identifiants valides, recherche de médicaments, ajout à l\'inventaire et test API', async t => {
     // Sélectionner les éléments du formulaire
@@ -131,6 +131,99 @@ test('Connexion avec des identifiants valides, recherche de médicaments, ajout 
     // Vérifier que les quantités ont été mises à jour correctement
     await t.expect(dafalganInventaireRow.find('td').withText(/^[5-9]$|^[1-9][0-9]+$/).exists).ok();
     await t.expect(bisoprololInventaireRow.find('td').withText(/^(1[5-9]|[2-9][0-9]+)$/).exists).ok();
+    
+    // Cliquer sur "Traitement" dans la navbar
+    const traitementLink = Selector('a').withText('Traitement');
+    await t.click(traitementLink);
+
+    // Vérifier que la page "Traitement" est chargée
+    await t.expect(Selector('h1').withText('Mes Traitements').exists).ok();
+
+    // Cliquer sur "Ajouter un nouveau traitement"
+    const addTraitementButton = Selector('a').withText('Ajouter un nouveau traitement');
+    await t.click(addTraitementButton);
+
+    // Vérifier que la page "Ajouter un Traitement" est chargée
+    await t.expect(Selector('h1').withText('Ajouter un Traitement').exists).ok();
+
+    // Remplir le formulaire de traitement
+    const nomTraitement = Selector('#traitement_nom');
+    const dateRenouvellement = Selector('#traitement_dateRenouvellement');
+    const dose = Selector('#traitement_dose');
+    const frequenceJour = Selector('#traitement_frequence_0');
+    const frequenceRenouvellement = Selector('#traitement_frequenceRenouvellement');
+    const submitButtonTraitement = Selector('button[type="submit"]').withText('Ajouter');
+
+    await t
+        .typeText(nomTraitement, 'Traitement Test')
+        .typeText(dateRenouvellement, '2025-12-31')
+        .typeText(dose, '2')
+        .click(frequenceJour)
+        .typeText(frequenceRenouvellement, '30');
+
+    // Soumettre le formulaire
+    await t.click(submitButtonTraitement);
+
+    // Vérifier que le traitement a été ajouté
+    await t.expect(Selector('h1').withText('Mes Traitements').exists).ok();
+    await t.expect(Selector('div').withText('Traitement Test').exists).ok();
+
+    // Cliquer sur "Ajouter un médicament"
+    const addMedicamentButton = Selector('a').withText('Ajouter un médicament');
+    await t.click(addMedicamentButton);
+
+    // Vérifier que la page "Ajouter un Médicament au Traitement" est chargée
+    await t.expect(Selector('h1').withText('Ajouter un Médicament au Traitement : Traitement Test').exists).ok();
+
+    // Sélectionner l'onglet "Mon Inventaire"
+    const inventaireTab = Selector('a').withText('Mon Inventaire');
+    await t.click(inventaireTab);
+
+    // Sélectionner un médicament de l'inventaire (par exemple, Dafalgan)
+    const dafalganCheckbox = Selector('#medicament_3881');
+    await t.click(dafalganCheckbox);
+
+    // Soumettre le formulaire pour ajouter le médicament au traitement
+    const submitMedicamentButton = Selector('button').withText('Ajouter au traitement');
+    await t.click(submitMedicamentButton);
+
+    // Vérifier que le médicament a été ajouté au traitement
+    await t.expect(Selector('div').withText('DAFALGAN 1000 mg, comprimé pelliculé').exists).ok();
+
+    // Sélectionner l'onglet "Médicaments Globaux"
+    const globalTab = Selector('a').withText('Médicaments Globaux');
+    await t.click(globalTab);
+
+    // Remplir le champ de recherche avec "paracetamol" et soumettre
+    const searchFieldTraitement = Selector('input[type="search"]');
+    const searchButtonTraitement = Selector('button[type="submit"]');
+    await t
+        .typeText(searchFieldTraitement, 'paracetamol')
+        .click(searchButtonTraitement);
+
+    // Sélectionner un médicament de la base (par exemple, Paracetamol)
+    const paracetamolCheckbox = Selector('#medicament_10832'); // Remplacez par l'ID correct
+    await t.click(paracetamolCheckbox);
+
+    // Soumettre le formulaire pour ajouter le médicament au traitement
+    await t.click(submitMedicamentButton);
+
+    // Vérifier que le médicament a été ajouté au traitement
+    await t.expect(Selector('div').withText('PARACETAMOL').exists).ok();
+
+    // Retourner dans l'onglet "Traitement"
+    await t.click(traitementLink);
+
+    // Cliquer sur le bouton "Modifier"
+    const modifyButton = Selector('button').withText('Modifier');
+    await t.click(modifyButton);
+
+    // Supprimer un médicament du traitement (par exemple, Dafalgan)
+    const deleteMedicamentButton = Selector('.delete-medicament').withAttribute('data-medicament-id', '3881');
+    await t.click(deleteMedicamentButton);
+
+    // Vérifier que le médicament a été supprimé du traitement
+    await t.expect(Selector('div').withText('DAFALGAN 1000 mg, comprimé pelliculé').exists).notOk();
 
 });
 
